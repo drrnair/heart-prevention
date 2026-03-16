@@ -8,6 +8,7 @@ import {
   Dimensions,
   RefreshControl,
 } from "react-native";
+import { Platform } from "react-native";
 import {
   VictoryChart,
   VictoryLine,
@@ -94,6 +95,21 @@ export default function TrendsScreen() {
   }
 
   const emptyMessage = "No data yet. Upload results to see trends.";
+
+  if (Platform.OS === "web") {
+    return (
+      <SafeAreaView className="flex-1 bg-surface-secondary">
+        <ScrollView className="flex-1" contentContainerClassName="px-4 py-4 pb-8">
+          <Text className="text-2xl font-bold text-text-primary mb-4">Trends</Text>
+          <View className="bg-white rounded-2xl p-6 shadow-sm items-center">
+            <Text className="text-sm text-text-secondary text-center">
+              Charts are available on the mobile app. Use an iOS or Android device to view trends.
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-surface-secondary">
