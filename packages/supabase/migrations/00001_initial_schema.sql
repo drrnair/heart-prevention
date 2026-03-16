@@ -11,6 +11,17 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ---------------------------------------------------------------------------
+-- Updated_at trigger function (defined early, before any table references it)
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ---------------------------------------------------------------------------
 -- ENUMS
 -- ---------------------------------------------------------------------------
 
@@ -393,7 +404,7 @@ CREATE TABLE lifestyle_plans (
 
   valid_from      date NOT NULL DEFAULT CURRENT_DATE,
   valid_until     date,
-  superseded_by   uuid REFERENCES lifestyle_plans(id),
+  superseded_by   uuid REFERENCES lifestyle_plans(id) ON DELETE SET NULL,
 
   created_at      timestamptz NOT NULL DEFAULT now(),
   updated_at      timestamptz NOT NULL DEFAULT now()
@@ -514,7 +525,8 @@ CREATE TABLE medication_condition_mappings (
 
   created_at            timestamptz NOT NULL DEFAULT now(),
 
-  CONSTRAINT chk_confidence CHECK (confidence BETWEEN 0 AND 1)
+  CONSTRAINT chk_confidence CHECK (confidence BETWEEN 0 AND 1),
+  CONSTRAINT uq_med_pattern UNIQUE (medication_name_pattern)
 );
 
 -- ---------------------------------------------------------------------------
@@ -592,7 +604,8 @@ CREATE TABLE mesa_cac_reference (
 
   created_at      timestamptz NOT NULL DEFAULT now(),
 
-  CONSTRAINT chk_mesa_age UNIQUE (age_group_lower, age_group_upper, sex, ethnicity)
+  CONSTRAINT chk_mesa_age_range CHECK (age_group_lower < age_group_upper),
+  CONSTRAINT uq_mesa UNIQUE (age_group_lower, age_group_upper, sex, ethnicity)
 );
 
 -- ---------------------------------------------------------------------------
@@ -612,20 +625,10 @@ CREATE TABLE generated_reports (
 );
 
 CREATE INDEX idx_gr_user       ON generated_reports(user_id);
+CREATE INDEX idx_gr_assessment ON generated_reports(assessment_id);
 CREATE INDEX idx_gr_user_created ON generated_reports(user_id, created_at DESC);
 
--- ---------------------------------------------------------------------------
--- Updated_at trigger function
--- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION set_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Apply updated_at triggers
+-- Apply updated_at triggers (function defined above, before table creation)
 CREATE TRIGGER trg_profiles_updated        BEFORE UPDATE ON profiles                     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_health_assessments_upd  BEFORE UPDATE ON health_assessments           FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_lab_results_updated     BEFORE UPDATE ON lab_results                  FOR EACH ROW EXECUTE FUNCTION set_updated_at();

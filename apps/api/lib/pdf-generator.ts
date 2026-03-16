@@ -7,9 +7,9 @@
 
 export interface PdfGenerationInput {
   readonly profile: Record<string, unknown>;
-  readonly scores: Record<string, unknown>;
-  readonly labs: Record<string, unknown>;
-  readonly lifestyle: Record<string, unknown>;
+  readonly scores: Record<string, unknown> | Record<string, unknown>[];
+  readonly labs: Record<string, unknown> | Record<string, unknown>[];
+  readonly lifestyle: Record<string, unknown> | null;
 }
 
 /**

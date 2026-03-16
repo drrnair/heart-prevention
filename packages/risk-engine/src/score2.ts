@@ -17,7 +17,6 @@ import type {
   RiskCategory,
   Score2Region,
   Score2Result,
-  Sex,
 } from './types';
 
 export class Score2ValidationError extends Error {
@@ -102,7 +101,7 @@ const REGION_CALIBRATION: Record<Score2Region, RegionCalibration> = {
 function classifyScore2Risk(
   riskPercent: number,
   age: number,
-  region: Score2Region,
+  _region: Score2Region,
 ): RiskCategory {
   // ESC 2021 guidelines: thresholds vary by age and region
   // Simplified age-based thresholds

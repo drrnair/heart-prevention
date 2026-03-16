@@ -63,7 +63,7 @@ export function CompletenessLevel({
           return (
             <View
               key={meta.level}
-              className={`flex-1 h-3 rounded-full ${isFilled ? FILLED_COLORS[meta.level] : 'bg-gray-200'}`}
+              className={`flex-1 h-3 rounded-full ${isFilled ? (FILLED_COLORS[meta.level] ?? 'bg-blue-400') : 'bg-gray-200'}`}
             />
           );
         })}

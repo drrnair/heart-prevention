@@ -15,7 +15,6 @@ import {
   VictoryScatter,
   VictoryTheme,
   VictoryTooltip,
-  VictoryGroup,
 } from "victory-native";
 
 const screenWidth = Dimensions.get("window").width;

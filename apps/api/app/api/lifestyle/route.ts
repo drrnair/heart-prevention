@@ -55,8 +55,8 @@ export const POST = withAuth(async (_req: NextRequest, user) => {
   try {
     const plan = await generateLifestylePlan(
       profileSummary,
-      scores ?? {},
-      labs ?? {},
+      { recentScores: scores ?? [] },
+      { latestLabs: labs ?? null },
       preferences,
     );
 

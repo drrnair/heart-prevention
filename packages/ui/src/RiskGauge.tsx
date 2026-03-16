@@ -164,7 +164,7 @@ export function RiskGauge({
         className="text-base font-semibold mt-2"
         style={{ color }}
       >
-        {CATEGORY_LABELS[riskCategory]}
+        {CATEGORY_LABELS[riskCategory] ?? riskCategory}
       </Text>
     </View>
   );

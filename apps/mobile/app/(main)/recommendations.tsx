@@ -26,7 +26,7 @@ interface Recommendation {
   readonly impactOnEstimate: string;
   readonly guideline: string;
   readonly tier: number;
-  status: RecommendationStatus;
+  readonly status: RecommendationStatus;
 }
 
 const STATUS_BADGES: Record<

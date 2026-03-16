@@ -18,7 +18,8 @@ INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethn
 (40, 49, 'male', 'white', 175, 203, 232, 38, 46, 56, 126, 130, 590),
 (50, 59, 'male', 'white', 172, 200, 230, 39, 47, 57, 124, 128, 560),
 (60, 69, 'male', 'white', 166, 193, 222, 40, 49, 59, 118, 117, 620),
-(70, 79, 'male', 'white', 158, 185, 214, 40, 49, 60, 112, 108, 440);
+(70, 79, 'male', 'white', 158, 185, 214, 40, 49, 60, 112, 108, 440)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === FEMALE — WHITE ===
 INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethnicity, tc_p25, tc_p50, tc_p75, hdl_p25, hdl_p50, hdl_p75, ldl_p50, tg_p50, sample_size) VALUES
@@ -27,7 +28,8 @@ INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethn
 (40, 49, 'female', 'white', 170, 199, 228, 50, 60, 73, 118, 98, 600),
 (50, 59, 'female', 'white', 190, 218, 248, 50, 62, 76, 132, 112, 580),
 (60, 69, 'female', 'white', 192, 220, 250, 51, 63, 77, 130, 115, 610),
-(70, 79, 'female', 'white', 185, 214, 244, 50, 62, 76, 126, 110, 450);
+(70, 79, 'female', 'white', 185, 214, 244, 50, 62, 76, 126, 110, 450)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === MALE — BLACK ===
 INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethnicity, tc_p25, tc_p50, tc_p75, hdl_p25, hdl_p50, hdl_p75, ldl_p50, tg_p50, sample_size) VALUES
@@ -36,7 +38,8 @@ INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethn
 (40, 49, 'male', 'black', 170, 197, 226, 42, 51, 63, 122, 100, 410),
 (50, 59, 'male', 'black', 168, 195, 224, 43, 52, 64, 120, 98, 390),
 (60, 69, 'male', 'black', 163, 190, 218, 44, 54, 66, 115, 92, 420),
-(70, 79, 'male', 'black', 155, 182, 210, 44, 54, 66, 110, 88, 280);
+(70, 79, 'male', 'black', 155, 182, 210, 44, 54, 66, 110, 88, 280)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === FEMALE — BLACK ===
 INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethnicity, tc_p25, tc_p50, tc_p75, hdl_p25, hdl_p50, hdl_p75, ldl_p50, tg_p50, sample_size) VALUES
@@ -45,7 +48,8 @@ INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethn
 (40, 49, 'female', 'black', 168, 195, 224, 50, 60, 73, 118, 82, 440),
 (50, 59, 'female', 'black', 185, 213, 242, 50, 62, 76, 128, 90, 420),
 (60, 69, 'female', 'black', 188, 216, 246, 52, 64, 78, 130, 92, 440),
-(70, 79, 'female', 'black', 182, 210, 240, 52, 64, 78, 125, 88, 310);
+(70, 79, 'female', 'black', 182, 210, 240, 52, 64, 78, 125, 88, 310)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === MALE — HISPANIC ===
 INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethnicity, tc_p25, tc_p50, tc_p75, hdl_p25, hdl_p50, hdl_p75, ldl_p50, tg_p50, sample_size) VALUES
@@ -54,7 +58,8 @@ INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethn
 (40, 49, 'male', 'hispanic', 176, 204, 234, 37, 45, 54, 126, 140, 510),
 (50, 59, 'male', 'hispanic', 173, 201, 230, 38, 46, 55, 124, 135, 480),
 (60, 69, 'male', 'hispanic', 167, 194, 222, 39, 47, 57, 118, 125, 500),
-(70, 79, 'male', 'hispanic', 160, 187, 215, 39, 48, 58, 113, 118, 340);
+(70, 79, 'male', 'hispanic', 160, 187, 215, 39, 48, 58, 113, 118, 340)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === FEMALE — HISPANIC ===
 INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethnicity, tc_p25, tc_p50, tc_p75, hdl_p25, hdl_p50, hdl_p75, ldl_p50, tg_p50, sample_size) VALUES
@@ -63,7 +68,8 @@ INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethn
 (40, 49, 'female', 'hispanic', 172, 200, 230, 47, 57, 69, 120, 110, 530),
 (50, 59, 'female', 'hispanic', 192, 220, 250, 48, 58, 71, 134, 120, 500),
 (60, 69, 'female', 'hispanic', 194, 222, 252, 49, 60, 73, 132, 122, 520),
-(70, 79, 'female', 'hispanic', 188, 216, 246, 49, 60, 73, 128, 115, 360);
+(70, 79, 'female', 'hispanic', 188, 216, 246, 49, 60, 73, 128, 115, 360)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === MALE — SOUTH_ASIAN (estimated from UK Biobank / MASALA study approximations) ===
 INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethnicity, tc_p25, tc_p50, tc_p75, hdl_p25, hdl_p50, hdl_p75, ldl_p50, tg_p50, sample_size) VALUES
@@ -72,7 +78,8 @@ INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethn
 (40, 49, 'male', 'south_asian', 180, 208, 238, 35, 43, 51, 130, 155, 300),
 (50, 59, 'male', 'south_asian', 177, 205, 235, 36, 44, 52, 128, 150, 280),
 (60, 69, 'male', 'south_asian', 170, 198, 228, 37, 45, 54, 122, 138, 260),
-(70, 79, 'male', 'south_asian', 162, 190, 220, 37, 45, 54, 116, 125, 180);
+(70, 79, 'male', 'south_asian', 162, 190, 220, 37, 45, 54, 116, 125, 180)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === FEMALE — SOUTH_ASIAN ===
 INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethnicity, tc_p25, tc_p50, tc_p75, hdl_p25, hdl_p50, hdl_p75, ldl_p50, tg_p50, sample_size) VALUES
@@ -81,7 +88,8 @@ INSERT INTO nhanes_reference_lipids (age_group_lower, age_group_upper, sex, ethn
 (40, 49, 'female', 'south_asian', 174, 203, 234, 44, 54, 65, 124, 118, 300),
 (50, 59, 'female', 'south_asian', 194, 224, 256, 44, 55, 67, 138, 130, 280),
 (60, 69, 'female', 'south_asian', 196, 226, 258, 45, 56, 68, 136, 128, 260),
-(70, 79, 'female', 'south_asian', 190, 220, 252, 45, 56, 68, 132, 120, 190);
+(70, 79, 'female', 'south_asian', 190, 220, 252, 45, 56, 68, 132, 120, 190)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 
 -- ---------------------------------------------------------------------------
@@ -96,56 +104,64 @@ INSERT INTO mesa_cac_reference (age_group_lower, age_group_upper, sex, ethnicity
 (45, 54, 'male', 'white', 0, 1, 36, 174, 1.9, 4.3, 7.2, 420),
 (55, 64, 'male', 'white', 0, 15, 142, 535, 1.8, 4.1, 6.8, 480),
 (65, 74, 'male', 'white', 3, 68, 377, 1165, 1.7, 3.8, 6.3, 440),
-(75, 84, 'male', 'white', 22, 178, 710, 1800, 1.6, 3.5, 5.8, 310);
+(75, 84, 'male', 'white', 22, 178, 710, 1800, 1.6, 3.5, 5.8, 310)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === FEMALE — WHITE ===
 INSERT INTO mesa_cac_reference (age_group_lower, age_group_upper, sex, ethnicity, cac_p25, cac_p50, cac_p75, cac_p90, hr_cac_1_100, hr_cac_101_300, hr_cac_gt_300, sample_size) VALUES
 (45, 54, 'female', 'white', 0, 0, 1, 14, 2.2, 5.0, 8.4, 440),
 (55, 64, 'female', 'white', 0, 0, 14, 100, 2.1, 4.7, 7.9, 490),
 (65, 74, 'female', 'white', 0, 3, 74, 330, 2.0, 4.4, 7.3, 460),
-(75, 84, 'female', 'white', 0, 27, 200, 680, 1.8, 4.0, 6.7, 320);
+(75, 84, 'female', 'white', 0, 27, 200, 680, 1.8, 4.0, 6.7, 320)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === MALE — BLACK ===
 INSERT INTO mesa_cac_reference (age_group_lower, age_group_upper, sex, ethnicity, cac_p25, cac_p50, cac_p75, cac_p90, hr_cac_1_100, hr_cac_101_300, hr_cac_gt_300, sample_size) VALUES
 (45, 54, 'male', 'black', 0, 0, 8, 70, 2.4, 5.4, 9.0, 320),
 (55, 64, 'male', 'black', 0, 2, 52, 260, 2.3, 5.1, 8.5, 360),
 (65, 74, 'male', 'black', 0, 18, 170, 640, 2.1, 4.7, 7.9, 330),
-(75, 84, 'male', 'black', 0, 60, 340, 1050, 1.9, 4.3, 7.2, 220);
+(75, 84, 'male', 'black', 0, 60, 340, 1050, 1.9, 4.3, 7.2, 220)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === FEMALE — BLACK ===
 INSERT INTO mesa_cac_reference (age_group_lower, age_group_upper, sex, ethnicity, cac_p25, cac_p50, cac_p75, cac_p90, hr_cac_1_100, hr_cac_101_300, hr_cac_gt_300, sample_size) VALUES
 (45, 54, 'female', 'black', 0, 0, 0, 5, 2.6, 5.8, 9.8, 340),
 (55, 64, 'female', 'black', 0, 0, 5, 46, 2.5, 5.5, 9.2, 380),
 (65, 74, 'female', 'black', 0, 0, 30, 168, 2.3, 5.1, 8.5, 350),
-(75, 84, 'female', 'black', 0, 6, 95, 380, 2.1, 4.7, 7.9, 240);
+(75, 84, 'female', 'black', 0, 6, 95, 380, 2.1, 4.7, 7.9, 240)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === MALE — HISPANIC ===
 INSERT INTO mesa_cac_reference (age_group_lower, age_group_upper, sex, ethnicity, cac_p25, cac_p50, cac_p75, cac_p90, hr_cac_1_100, hr_cac_101_300, hr_cac_gt_300, sample_size) VALUES
 (45, 54, 'male', 'hispanic', 0, 0, 16, 100, 2.1, 4.7, 7.9, 350),
 (55, 64, 'male', 'hispanic', 0, 6, 80, 340, 2.0, 4.4, 7.4, 390),
 (65, 74, 'male', 'hispanic', 0, 30, 220, 740, 1.9, 4.1, 6.9, 360),
-(75, 84, 'male', 'hispanic', 2, 100, 450, 1200, 1.7, 3.8, 6.3, 250);
+(75, 84, 'male', 'hispanic', 2, 100, 450, 1200, 1.7, 3.8, 6.3, 250)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === FEMALE — HISPANIC ===
 INSERT INTO mesa_cac_reference (age_group_lower, age_group_upper, sex, ethnicity, cac_p25, cac_p50, cac_p75, cac_p90, hr_cac_1_100, hr_cac_101_300, hr_cac_gt_300, sample_size) VALUES
 (45, 54, 'female', 'hispanic', 0, 0, 0, 8, 2.3, 5.2, 8.7, 370),
 (55, 64, 'female', 'hispanic', 0, 0, 8, 60, 2.2, 4.9, 8.2, 410),
 (65, 74, 'female', 'hispanic', 0, 1, 42, 210, 2.1, 4.6, 7.7, 370),
-(75, 84, 'female', 'hispanic', 0, 12, 130, 450, 1.9, 4.2, 7.0, 260);
+(75, 84, 'female', 'hispanic', 0, 12, 130, 450, 1.9, 4.2, 7.0, 260)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === MALE — SOUTH_ASIAN (estimated from MASALA study approximations) ===
 INSERT INTO mesa_cac_reference (age_group_lower, age_group_upper, sex, ethnicity, cac_p25, cac_p50, cac_p75, cac_p90, hr_cac_1_100, hr_cac_101_300, hr_cac_gt_300, sample_size) VALUES
 (45, 54, 'male', 'south_asian', 0, 3, 48, 210, 2.0, 4.5, 7.5, 240),
 (55, 64, 'male', 'south_asian', 0, 22, 180, 620, 1.9, 4.3, 7.1, 270),
 (65, 74, 'male', 'south_asian', 4, 82, 420, 1250, 1.8, 4.0, 6.7, 250),
-(75, 84, 'male', 'south_asian', 28, 210, 780, 1900, 1.7, 3.7, 6.2, 170);
+(75, 84, 'male', 'south_asian', 28, 210, 780, 1900, 1.7, 3.7, 6.2, 170)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 -- === FEMALE — SOUTH_ASIAN ===
 INSERT INTO mesa_cac_reference (age_group_lower, age_group_upper, sex, ethnicity, cac_p25, cac_p50, cac_p75, cac_p90, hr_cac_1_100, hr_cac_101_300, hr_cac_gt_300, sample_size) VALUES
 (45, 54, 'female', 'south_asian', 0, 0, 2, 18, 2.3, 5.2, 8.7, 250),
 (55, 64, 'female', 'south_asian', 0, 0, 18, 110, 2.2, 4.9, 8.2, 280),
 (65, 74, 'female', 'south_asian', 0, 4, 85, 370, 2.1, 4.6, 7.7, 260),
-(75, 84, 'female', 'south_asian', 0, 32, 230, 720, 1.9, 4.2, 7.0, 180);
+(75, 84, 'female', 'south_asian', 0, 32, 230, 720, 1.9, 4.2, 7.0, 180)
+ON CONFLICT (age_group_lower, age_group_upper, sex, ethnicity) DO NOTHING;
 
 
 -- ---------------------------------------------------------------------------
@@ -272,7 +288,8 @@ INSERT INTO supplement_reference (name, category, evidence_tier, mechanism, targ
  ARRAY['Bowel obstruction', 'Dysphagia', 'Esophageal stricture'],
  ARRAY['Anderson et al., Am J Clin Nutr 2000 (meta-analysis)', 'FDA health claim approval 1998'],
  'FDA-approved health claim for cholesterol reduction. LDL reduction ~5-10%. Extremely safe. Must take with adequate water. ACC/AHA recognized as adjunct therapy.'
-);
+)
+ON CONFLICT (name) DO NOTHING;
 
 
 -- ---------------------------------------------------------------------------
@@ -340,4 +357,5 @@ INSERT INTO medication_condition_mappings (medication_name_pattern, inferred_con
 
 -- Sulfonylureas
 ('%(glimepiride|glipizide|glyburide|gliclazide|amaryl|glucotrol)%',
- 'type2_diabetes', 'diabetes_status', 'type2', 0.95);
+ 'type2_diabetes', 'diabetes_status', 'type2', 0.95)
+ON CONFLICT (medication_name_pattern) DO NOTHING;

@@ -143,7 +143,7 @@ export function RecommendationCard({
   const { id, testCode, testCategory, priority, rationale, status } =
     recommendation;
 
-  const priorityStyle = PRIORITY_STYLES[priority];
+  const priorityStyle = PRIORITY_STYLES[priority] ?? PRIORITY_STYLES.routine;
   const testName = TEST_NAMES[testCode] ?? testCode;
   const categoryLabel = CATEGORY_LABELS[testCategory] ?? testCategory;
 

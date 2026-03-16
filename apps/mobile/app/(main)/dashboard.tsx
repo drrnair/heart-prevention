@@ -13,13 +13,31 @@ import { ConfidenceRange } from "@/components/ConfidenceRange";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 
 // Mock data - in production, fetch from API
-const MOCK_ASSESSMENT = {
+type RiskLevel = "low" | "borderline" | "intermediate" | "high";
+type DataLevel = 1 | 2 | 3 | 4;
+
+interface Assessment {
+  readonly risk_percentage: number;
+  readonly confidence_low: number;
+  readonly confidence_high: number;
+  readonly risk_level: RiskLevel;
+  readonly is_preliminary: boolean;
+  readonly data_level: DataLevel;
+  readonly next_level_hint: string;
+  readonly bmi: number;
+  readonly whr: number;
+  readonly whtr: number;
+  readonly risk_enhancers_count: number;
+  readonly last_updated: string;
+}
+
+const MOCK_ASSESSMENT: Assessment = {
   risk_percentage: 12.4,
   confidence_low: 8.1,
   confidence_high: 17.8,
-  risk_level: "borderline" as const,
+  risk_level: "borderline",
   is_preliminary: true,
-  data_level: 1 as const,
+  data_level: 1,
   next_level_hint: "Add lipid panel (Total Cholesterol, LDL, HDL, Triglycerides) to reach Level 2",
   bmi: 25.8,
   whr: 0.89,

@@ -29,7 +29,7 @@ export default function MeasurementsScreen() {
   const [diastolic, setDiastolic] = useState("");
   const [pulseRate, setPulseRate] = useState("");
 
-  const validateBP = useCallback(() => {
+  const handleBPBlur = useCallback(() => {
     const sys = parseInt(systolic, 10);
     const dia = parseInt(diastolic, 10);
 
@@ -52,7 +52,32 @@ export default function MeasurementsScreen() {
   }, [systolic, diastolic]);
 
   const handleNext = () => {
-    validateBP();
+    const sys = parseInt(systolic, 10);
+    const dia = parseInt(diastolic, 10);
+
+    if (sys && dia && sys < dia) {
+      Alert.alert(
+        "Check Blood Pressure",
+        `You entered ${sys}/${dia}. Did you mean ${dia}/${sys}? The top number (systolic) is usually higher than the bottom number (diastolic).`,
+        [
+          {
+            text: "Keep & Continue",
+            onPress: () => router.push("/(onboarding)/medical-history"),
+          },
+          {
+            text: "Swap & Continue",
+            onPress: () => {
+              setSystolic(String(dia));
+              setDiastolic(String(sys));
+              router.push("/(onboarding)/medical-history");
+            },
+          },
+          { text: "Go Back & Edit", style: "cancel" },
+        ],
+      );
+      return;
+    }
+
     router.push("/(onboarding)/medical-history");
   };
 
@@ -222,7 +247,7 @@ export default function MeasurementsScreen() {
                 placeholderTextColor="#9CA3AF"
                 value={systolic}
                 onChangeText={setSystolic}
-                onBlur={validateBP}
+                onBlur={handleBPBlur}
                 keyboardType="numeric"
               />
               <Text className="text-xs text-text-tertiary ml-1">systolic</Text>
@@ -235,7 +260,7 @@ export default function MeasurementsScreen() {
                 placeholderTextColor="#9CA3AF"
                 value={diastolic}
                 onChangeText={setDiastolic}
-                onBlur={validateBP}
+                onBlur={handleBPBlur}
                 keyboardType="numeric"
               />
               <Text className="text-xs text-text-tertiary ml-1">

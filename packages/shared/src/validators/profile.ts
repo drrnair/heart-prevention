@@ -159,8 +159,8 @@ export function convertFeetInchesToCm(value: string): number | null {
   // Format: 5'10" or 5'10
   const quoteMatch = value.match(/^(\d+)['']\s*(\d+)?["""]?\s*$/);
   if (quoteMatch) {
-    const feet = parseInt(quoteMatch[1], 10);
-    const inches = parseInt(quoteMatch[2] || '0', 10);
+    const feet = parseInt(quoteMatch[1] ?? '0', 10);
+    const inches = parseInt(quoteMatch[2] ?? '0', 10);
     if (feet >= 1 && feet <= 8 && inches >= 0 && inches <= 11) {
       return Math.round((feet * 12 + inches) * 2.54 * 10) / 10;
     }
@@ -169,8 +169,8 @@ export function convertFeetInchesToCm(value: string): number | null {
   // Format: 5.10 (feet.inches)
   const dotMatch = value.match(/^(\d+)\.(\d{1,2})$/);
   if (dotMatch) {
-    const feet = parseInt(dotMatch[1], 10);
-    const inches = parseInt(dotMatch[2], 10);
+    const feet = parseInt(dotMatch[1] ?? '0', 10);
+    const inches = parseInt(dotMatch[2] ?? '0', 10);
     if (feet >= 1 && feet <= 8 && inches >= 0 && inches <= 11) {
       return Math.round((feet * 12 + inches) * 2.54 * 10) / 10;
     }
@@ -179,8 +179,8 @@ export function convertFeetInchesToCm(value: string): number | null {
   // Format: "5 10" (feet space inches)
   const spaceMatch = value.match(/^(\d+)\s+(\d{1,2})$/);
   if (spaceMatch) {
-    const feet = parseInt(spaceMatch[1], 10);
-    const inches = parseInt(spaceMatch[2], 10);
+    const feet = parseInt(spaceMatch[1] ?? '0', 10);
+    const inches = parseInt(spaceMatch[2] ?? '0', 10);
     if (feet >= 1 && feet <= 8 && inches >= 0 && inches <= 11) {
       return Math.round((feet * 12 + inches) * 2.54 * 10) / 10;
     }

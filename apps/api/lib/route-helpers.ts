@@ -58,13 +58,17 @@ type AuthenticatedHandler<P extends Record<string, string> = Record<string, stri
  * Middleware that extracts the authenticated user from the request.
  * Returns 401 if no valid session exists.
  * Passes through Next.js dynamic route params.
+ *
+ * In Next.js 15, the context (second) parameter of route handlers must be
+ * required (not optional). The returned function signature uses a required
+ * context parameter to satisfy Next.js 15 type checks.
  */
 export function withAuth<P extends Record<string, string> = Record<string, string>>(
   handler: AuthenticatedHandler<P>,
 ) {
   return async (
     req: NextRequest,
-    context?: RouteContext<P>,
+    context: RouteContext<P>,
   ): Promise<NextResponse> => {
     try {
       const supabase = await createUserClient();
@@ -77,7 +81,7 @@ export function withAuth<P extends Record<string, string> = Record<string, strin
         return errorResponse('Authentication required', 401);
       }
 
-      const params = context ? await context.params : ({} as P);
+      const params = await context.params;
       return handler(req, user, params);
     } catch (err) {
       const message =

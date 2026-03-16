@@ -149,28 +149,36 @@ export const POST = withAuth(async (req: NextRequest, user) => {
   // ASCVD PCE (requires basic lipids)
   if (labs?.basicLipids) {
     try {
-      const ascvd = calculateAscvd({
+      const ascvd = calculateAscvd(
         demographics,
-        vitals,
-        labs,
-      });
+        labs.basicLipids.totalCholesterol,
+        labs.basicLipids.hdl,
+        vitals.systolicBp,
+        vitals.onBpMedication,
+        vitals.isSmoker,
+        vitals.hasDiabetes,
+      );
       scores.ascvd_pce_10yr = {
         value: ascvd.tenYearRisk,
         category: ascvd.riskCategory,
       };
     } catch {
-      // Skip if validation fails
+      // Skip if validation fails (e.g., age out of range)
     }
   }
 
   // Framingham
   if (labs?.basicLipids) {
     try {
-      const framingham = calculateFramingham({
+      const framingham = calculateFramingham(
         demographics,
-        vitals,
-        labs,
-      });
+        labs.basicLipids.totalCholesterol,
+        labs.basicLipids.hdl,
+        vitals.systolicBp,
+        vitals.onBpMedication,
+        vitals.isSmoker,
+        vitals.hasDiabetes,
+      );
       scores.framingham_10yr = {
         value: framingham.tenYearRisk,
         category: framingham.riskCategory,
@@ -183,11 +191,14 @@ export const POST = withAuth(async (req: NextRequest, user) => {
   // SCORE2 (European)
   if (labs?.basicLipids && profile.score2_region) {
     try {
-      const score2 = calculateScore2({
+      const score2 = calculateScore2(
         demographics,
-        vitals,
-        labs,
-      });
+        labs.basicLipids.totalCholesterol,
+        labs.basicLipids.hdl,
+        vitals.systolicBp,
+        vitals.isSmoker,
+        profile.score2_region,
+      );
       scores.score2_10yr = {
         value: score2.tenYearRisk,
         category: score2.riskCategory,
@@ -201,13 +212,10 @@ export const POST = withAuth(async (req: NextRequest, user) => {
   // MESA CAC adjustment
   if (imaging?.cacScore != null && scores.ascvd_pce_10yr) {
     try {
-      const adjusted = adjustRiskByCac(
-        (scores.ascvd_pce_10yr as { value: number }).value,
-        imaging.cacScore,
-        age,
-        demographics.sex,
-        demographics.ethnicity,
-      );
+      const baseRisk = (scores.ascvd_pce_10yr as { value: number }).value;
+      // Use a simple percentile estimate based on CAC score (50th as default)
+      const cacPercentile = imaging.cacScore === 0 ? 0 : 50;
+      const adjusted = adjustRiskByCac(baseRisk, imaging.cacScore, cacPercentile);
       scores.mesa_cac_adjusted = {
         baselineRisk: adjusted.baselineRisk,
         adjustedRisk: adjusted.adjustedRisk,

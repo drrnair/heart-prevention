@@ -59,7 +59,7 @@ function LevelBadge({
   return (
     <View
       className="rounded-full px-1.5 py-0.5 mr-1"
-      style={{ backgroundColor: LEVEL_COLORS[level] }}
+      style={{ backgroundColor: LEVEL_COLORS[level] ?? '#3b82f6' }}
     >
       <Text className="text-[9px] font-bold text-white">
         L{level}
@@ -76,6 +76,21 @@ export function TrendChart({
   unit,
   referenceRange,
 }: TrendChartProps): React.JSX.Element {
+  // Guard: empty data
+  if (data.length === 0) {
+    return (
+      <View className="bg-white rounded-xl px-2 py-3 my-2 shadow-sm border border-gray-100">
+        <View className="flex-row items-baseline px-2 mb-1">
+          <Text className="text-sm font-semibold text-gray-800">{title}</Text>
+          <Text className="text-xs text-gray-400 ml-1">({unit})</Text>
+        </View>
+        <View className="items-center justify-center py-8">
+          <Text className="text-sm text-gray-400">No data available</Text>
+        </View>
+      </View>
+    );
+  }
+
   // Transform data for Victory.
   const chartData = data.map((pt, idx) => ({
     x: idx,
@@ -85,11 +100,14 @@ export function TrendChart({
     level: pt.level,
   }));
 
+  const isSinglePoint = chartData.length === 1;
+
   // Compute domain padding.
   const yValues = data.map((d) => d.value);
   const yMin = Math.min(...yValues, referenceRange?.min ?? Infinity);
   const yMax = Math.max(...yValues, referenceRange?.max ?? -Infinity);
-  const yPad = (yMax - yMin) * 0.15 || 5;
+  // When all values are identical, provide a minimum padding
+  const yPad = yMax === yMin ? 5 : (yMax - yMin) * 0.15;
 
   // Reference range area data.
   const refAreaData =
@@ -118,7 +136,7 @@ export function TrendChart({
       >
         {/* X axis */}
         <VictoryAxis
-          tickFormat={(_, idx: number) => {
+          tickFormat={(_: unknown, idx: number) => {
             const pt = chartData[idx];
             return pt !== undefined ? formatDateLabel(pt.date) : '';
           }}
@@ -147,23 +165,25 @@ export function TrendChart({
           />
         )}
 
-        {/* Trend line */}
-        <VictoryLine
-          data={chartData}
-          style={{
-            data: { stroke: '#3b82f6', strokeWidth: 2 },
-          }}
-        />
+        {/* Trend line (hide for single data point) */}
+        {!isSinglePoint && (
+          <VictoryLine
+            data={chartData}
+            style={{
+              data: { stroke: '#3b82f6', strokeWidth: 2 },
+            }}
+          />
+        )}
 
-        {/* Data points with level labels */}
+        {/* Data points with level labels (larger dot for single point) */}
         <VictoryScatter
           data={chartData}
-          size={5}
+          size={isSinglePoint ? 8 : 5}
           style={{
             data: {
               fill: ({ datum }: { datum: { level?: DataLevel } }) =>
                 datum.level !== undefined
-                  ? LEVEL_COLORS[datum.level]
+                  ? (LEVEL_COLORS[datum.level] ?? '#3b82f6')
                   : '#3b82f6',
               stroke: '#ffffff',
               strokeWidth: 2,

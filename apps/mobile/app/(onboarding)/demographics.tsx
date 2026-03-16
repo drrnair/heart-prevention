@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import {
   View,
   Text,
+  TextInput,
   Pressable,
   ScrollView,
   SafeAreaView,
-  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
 
 const ETHNICITIES = [
   "White / Caucasian",
@@ -35,8 +34,7 @@ const SCORE2_REGIONS = [
 export default function DemographicsScreen() {
   const router = useRouter();
 
-  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dateOfBirthText, setDateOfBirthText] = useState("");
   const [biologicalSex, setBiologicalSex] = useState<"male" | "female" | null>(
     null,
   );
@@ -48,13 +46,6 @@ export default function DemographicsScreen() {
   const handleNext = () => {
     router.push("/(onboarding)/measurements");
   };
-
-  const formatDate = (date: Date) =>
-    date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -91,32 +82,22 @@ export default function DemographicsScreen() {
           <Text className="text-sm font-medium text-text-primary mb-2">
             Date of Birth
           </Text>
-          <Pressable
-            onPress={() => setShowDatePicker(true)}
-            className="flex-row items-center bg-surface-secondary border border-gray-200 rounded-xl px-4 h-12"
-          >
+          <View className="flex-row items-center bg-surface-secondary border border-gray-200 rounded-xl px-4 h-12">
             <Ionicons name="calendar-outline" size={20} color="#9CA3AF" />
-            <Text
-              className={`ml-3 text-base ${
-                dateOfBirth ? "text-text-primary" : "text-text-tertiary"
-              }`}
-            >
-              {dateOfBirth ? formatDate(dateOfBirth) : "Select date"}
-            </Text>
-          </Pressable>
-          {showDatePicker && (
-            <DateTimePicker
-              value={dateOfBirth ?? new Date(1980, 0, 1)}
-              mode="date"
-              display={Platform.OS === "ios" ? "spinner" : "default"}
-              maximumDate={new Date()}
-              minimumDate={new Date(1920, 0, 1)}
-              onChange={(_, selectedDate) => {
-                setShowDatePicker(Platform.OS === "ios");
-                if (selectedDate) setDateOfBirth(selectedDate);
-              }}
+            <TextInput
+              className="flex-1 ml-3 text-base text-text-primary"
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor="#9CA3AF"
+              value={dateOfBirthText}
+              onChangeText={setDateOfBirthText}
+              keyboardType="numbers-and-punctuation"
+              autoCapitalize="none"
+              maxLength={10}
             />
-          )}
+          </View>
+          <Text className="text-xs text-text-tertiary mt-1">
+            Format: YYYY-MM-DD (e.g., 1980-06-15)
+          </Text>
         </View>
 
         {/* Biological Sex */}

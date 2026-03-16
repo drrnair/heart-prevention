@@ -92,7 +92,7 @@ export const GET = withAuth(async (_req: NextRequest, user) => {
 
   const profileForCompleteness = { age, sex: profile.biological_sex, vitals };
   const dataLevel = determineDataLevel(profileForCompleteness, labs, imaging);
-  const completeness = getCompletenessInfo(profileForCompleteness, labs, imaging);
+  const completeness = getCompletenessInfo(dataLevel, profileForCompleteness, labs, imaging);
 
   return jsonResponse(
     {

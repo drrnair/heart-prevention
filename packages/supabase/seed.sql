@@ -116,7 +116,7 @@ INSERT INTO lab_results (
   108, 5.8,
   0.95, 92,
   28, 24,
-  14.8, 7.2, 245000,
+  14.8, 7.2, 245,
   2.4
 )
 RETURNING id INTO lab_1_id;

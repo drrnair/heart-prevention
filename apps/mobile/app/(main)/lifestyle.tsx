@@ -6,6 +6,7 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
@@ -80,9 +81,18 @@ export default function LifestyleScreen() {
 
   const handleGenerate = async () => {
     setIsGenerating(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setHasGenerated(true);
-    setIsGenerating(false);
+    try {
+      // In production, call API to generate personalized lifestyle plan
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      setHasGenerated(true);
+    } catch {
+      Alert.alert(
+        "Generation Failed",
+        "We couldn't generate your lifestyle plan. Please try again.",
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (

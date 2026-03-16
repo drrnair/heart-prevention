@@ -119,11 +119,19 @@ export default function UploadScreen() {
   const processImage = async (_uri: string) => {
     setStage("processing");
 
-    // Simulate API processing
-    await new Promise((resolve) => setTimeout(resolve, 2500));
+    try {
+      // Simulate API processing - in production, POST image to API
+      await new Promise((resolve) => setTimeout(resolve, 2500));
 
-    setExtractedValues(MOCK_EXTRACTED);
-    setStage("review");
+      setExtractedValues(MOCK_EXTRACTED);
+      setStage("review");
+    } catch {
+      Alert.alert(
+        "Processing Failed",
+        "We couldn't analyze your report. Please try again or use manual entry.",
+      );
+      setStage("select");
+    }
   };
 
   const handleConfirm = () => {

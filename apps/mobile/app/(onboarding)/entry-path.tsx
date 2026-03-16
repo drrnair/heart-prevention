@@ -23,9 +23,9 @@ export default function EntryPathScreen() {
           </Text>
         </View>
 
-        {/* Card A: Has Reports */}
+        {/* Card A: Has Reports - goes to demographics first, then upload after onboarding */}
         <Pressable
-          onPress={() => router.push("/(main)/upload")}
+          onPress={() => router.push("/(onboarding)/demographics")}
           className="bg-white border-2 border-primary-200 rounded-2xl p-5 mb-4 active:bg-primary-50"
         >
           <View className="flex-row items-start gap-4">

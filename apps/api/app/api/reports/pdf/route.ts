@@ -46,10 +46,10 @@ export const POST = withAuth(async (_req: NextRequest, user) => {
       profile: profileRes.data,
       scores: scoresRes.data ?? [],
       labs: labsRes.data ?? [],
-      lifestyle: planRes.data ?? {},
+      lifestyle: planRes.data ?? null,
     });
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
