@@ -5,46 +5,18 @@ import {
   ScrollView,
   SafeAreaView,
   Pressable,
+  RefreshControl,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { CompletenessMeter } from "@/components/CompletenessMeter";
 import { ConfidenceRange } from "@/components/ConfidenceRange";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
-
-// Mock data - in production, fetch from API
-type RiskLevel = "low" | "borderline" | "intermediate" | "high";
-type DataLevel = 1 | 2 | 3 | 4;
-
-interface Assessment {
-  readonly risk_percentage: number;
-  readonly confidence_low: number;
-  readonly confidence_high: number;
-  readonly risk_level: RiskLevel;
-  readonly is_preliminary: boolean;
-  readonly data_level: DataLevel;
-  readonly next_level_hint: string;
-  readonly bmi: number;
-  readonly whr: number;
-  readonly whtr: number;
-  readonly risk_enhancers_count: number;
-  readonly last_updated: string;
-}
-
-const MOCK_ASSESSMENT: Assessment = {
-  risk_percentage: 12.4,
-  confidence_low: 8.1,
-  confidence_high: 17.8,
-  risk_level: "borderline",
-  is_preliminary: true,
-  data_level: 1,
-  next_level_hint: "Add lipid panel (Total Cholesterol, LDL, HDL, Triglycerides) to reach Level 2",
-  bmi: 25.8,
-  whr: 0.89,
-  whtr: 0.51,
-  risk_enhancers_count: 2,
-  last_updated: "2026-03-15T10:30:00Z",
-};
+import { LoadingSkeleton } from "@/components/LoadingSkeleton";
+import { ErrorBanner } from "@/components/ErrorBanner";
+import { useDashboard } from "@/hooks/useDashboard";
+import { useUnits } from "@/hooks/useUnits";
+import { useWearable } from "@/hooks/useWearable";
 
 function RiskGauge({
   percentage,
@@ -63,8 +35,7 @@ function RiskGauge({
   const color = riskColors[riskLevel] ?? "#6B7280";
 
   return (
-    <View className="items-center py-4">
-      {/* Simplified circular gauge representation */}
+    <View className="items-center py-4" accessibilityLabel={`10-year cardiovascular risk: ${percentage.toFixed(1)} percent, ${riskLevel} risk`}>
       <View
         className="w-40 h-40 rounded-full border-8 items-center justify-center"
         style={{ borderColor: color }}
@@ -104,6 +75,7 @@ function MetricCard({
   return (
     <View
       className={`flex-1 rounded-xl border p-3 ${statusColors[status]}`}
+      accessibilityLabel={`${label}: ${value} ${unit}, ${status}`}
     >
       <Text className="text-xs text-text-secondary mb-1">{label}</Text>
       <View className="flex-row items-baseline">
@@ -117,15 +89,60 @@ function MetricCard({
   );
 }
 
+function formatTimeAgo(date: Date): string {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function getBmiStatus(bmi: number): "normal" | "borderline" | "elevated" {
+  if (bmi < 25) return "normal";
+  if (bmi < 30) return "borderline";
+  return "elevated";
+}
+
+function getWhrStatus(whr: number): "normal" | "borderline" | "elevated" {
+  if (whr < 0.9) return "normal";
+  if (whr < 1.0) return "borderline";
+  return "elevated";
+}
+
 export default function DashboardScreen() {
   const router = useRouter();
-  const assessment = MOCK_ASSESSMENT;
+  const { riskScore, completeness, assessment, isLoading, error, refetch } =
+    useDashboard();
+  const { formatWeight, weightUnit } = useUnits();
+  const { isConnected, latestData, lastSynced } = useWearable();
+
+  if (isLoading && !riskScore && !assessment) {
+    return (
+      <SafeAreaView className="flex-1 bg-surface-secondary">
+        <LoadingSkeleton />
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView className="flex-1 bg-surface-secondary">
+        <ErrorBanner message={error} onRetry={refetch} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-surface-secondary">
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-4 py-4 pb-8"
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} />
+        }
       >
         {/* Header */}
         <View className="flex-row items-center justify-between mb-4">
@@ -133,92 +150,173 @@ export default function DashboardScreen() {
             <Text className="text-2xl font-bold text-text-primary">
               Dashboard
             </Text>
-            <Text className="text-xs text-text-tertiary">
-              Last updated:{" "}
-              {new Date(assessment.last_updated).toLocaleDateString()}
-            </Text>
           </View>
-          <Pressable className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm">
+          <Pressable className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm" accessibilityRole="button" accessibilityLabel="Notifications">
             <Ionicons name="notifications-outline" size={22} color="#111827" />
           </Pressable>
         </View>
 
-        {/* Risk Gauge */}
-        <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
-          <RiskGauge
-            percentage={assessment.risk_percentage}
-            riskLevel={assessment.risk_level}
-          />
-        </View>
+        {/* Risk Gauge or Profile Prompt */}
+        {riskScore ? (
+          <>
+            <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
+              <RiskGauge
+                percentage={riskScore.percentage}
+                riskLevel={riskScore.riskLevel}
+              />
+            </View>
 
-        {/* Confidence Range */}
-        <View className="mb-4">
-          <ConfidenceRange
-            low={assessment.confidence_low}
-            high={assessment.confidence_high}
-            midpoint={assessment.risk_percentage}
-            isPreliminary={assessment.is_preliminary}
-            riskLevel={assessment.risk_level}
-          />
-        </View>
+            <View className="mb-4">
+              <ConfidenceRange
+                low={riskScore.percentage * 0.65}
+                high={riskScore.percentage * 1.45}
+                midpoint={riskScore.percentage}
+                isPreliminary={riskScore.isPreliminary}
+                riskLevel={riskScore.riskLevel}
+              />
+            </View>
+          </>
+        ) : (
+          <Pressable
+            onPress={() => router.push("/(main)/checkin")}
+            className="bg-blue-50 border border-blue-200 rounded-2xl p-6 items-center mb-4 active:bg-blue-100"
+            accessibilityRole="button"
+            accessibilityLabel="Complete your profile to see cardiovascular risk estimate"
+          >
+            <View className="w-16 h-16 bg-blue-100 rounded-full items-center justify-center mb-3">
+              <Ionicons name="person-add" size={32} color="#3B82F6" />
+            </View>
+            <Text className="text-base font-semibold text-blue-900">
+              Complete Your Profile
+            </Text>
+            <Text className="text-xs text-blue-700 mt-1 text-center">
+              Add your health data to see your cardiovascular risk estimate
+            </Text>
+          </Pressable>
+        )}
 
         {/* Completeness Meter */}
-        <View className="mb-4">
-          <CompletenessMeter
-            currentLevel={assessment.data_level}
-            nextLevelHint={assessment.next_level_hint}
-          />
-        </View>
+        {completeness && (
+          <View className="mb-4">
+            <CompletenessMeter
+              currentLevel={completeness.currentLevel}
+              nextLevelHint={completeness.nextLevelHint}
+            />
+          </View>
+        )}
 
         {/* Body Metrics */}
-        <Text className="text-sm font-semibold text-text-primary mb-2 ml-1">
-          Body Metrics
-        </Text>
-        <View className="flex-row gap-3 mb-4">
-          <MetricCard
-            label="BMI"
-            value={assessment.bmi.toFixed(1)}
-            unit="kg/m2"
-            status="borderline"
-          />
-          <MetricCard
-            label="WHR"
-            value={assessment.whr.toFixed(2)}
-            unit=""
-            status="borderline"
-          />
-          <MetricCard
-            label="WHtR"
-            value={assessment.whtr.toFixed(2)}
-            unit=""
-            status="normal"
-          />
-        </View>
-
-        {/* Risk Enhancers */}
-        <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-sm font-semibold text-text-primary">
-                Risk-Enhancing Factors
-              </Text>
-              <Text className="text-xs text-text-secondary mt-1">
-                {assessment.risk_enhancers_count} factor
-                {assessment.risk_enhancers_count !== 1 ? "s" : ""} identified
-              </Text>
+        {assessment && (
+          <>
+            <Text className="text-sm font-semibold text-text-primary mb-2 ml-1">
+              Body Metrics
+            </Text>
+            <View className="flex-row gap-3 mb-4">
+              {assessment.bmi != null && (
+                <MetricCard
+                  label="BMI"
+                  value={assessment.bmi.toFixed(1)}
+                  unit="kg/m2"
+                  status={getBmiStatus(assessment.bmi)}
+                />
+              )}
+              {assessment.waistToHip != null && (
+                <MetricCard
+                  label="WHR"
+                  value={assessment.waistToHip.toFixed(2)}
+                  unit=""
+                  status={getWhrStatus(assessment.waistToHip)}
+                />
+              )}
+              <MetricCard
+                label="BP"
+                value={`${assessment.systolicBp}/${assessment.diastolicBp}`}
+                unit="mmHg"
+                status={assessment.systolicBp >= 130 ? "elevated" : assessment.systolicBp >= 120 ? "borderline" : "normal"}
+              />
             </View>
-            <View className="bg-amber-100 w-10 h-10 rounded-full items-center justify-center">
-              <Text className="text-lg font-bold text-amber-700">
-                {assessment.risk_enhancers_count}
+            <View className="flex-row gap-3 mb-4">
+              <MetricCard
+                label="Weight"
+                value={formatWeight(assessment.weightKg).split(" ")[0] ?? ""}
+                unit={weightUnit}
+                status="normal"
+              />
+            </View>
+          </>
+        )}
+
+        {/* Wearable Data */}
+        {isConnected && latestData && (
+          <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
+            <View className="flex-row items-center justify-between mb-3">
+              <Text className="text-sm font-semibold text-text-primary">
+                Wearable Data
               </Text>
+              {lastSynced && (
+                <Text className="text-2xs text-text-tertiary">
+                  {formatTimeAgo(lastSynced)}
+                </Text>
+              )}
+            </View>
+            <View className="flex-row gap-4">
+              {latestData.restingHeartRate != null && (
+                <View className="flex-row items-center gap-1.5" accessibilityLabel={`Resting heart rate: ${latestData.restingHeartRate} beats per minute`}>
+                  <Ionicons name="heart" size={16} color="#EF4444" />
+                  <Text className="text-sm font-medium text-text-primary">
+                    {latestData.restingHeartRate}
+                  </Text>
+                  <Text className="text-2xs text-text-secondary">bpm</Text>
+                </View>
+              )}
+              {latestData.stepCount != null && (
+                <View className="flex-row items-center gap-1.5" accessibilityLabel={`Step count: ${latestData.stepCount.toLocaleString()} steps`}>
+                  <Ionicons name="walk" size={16} color="#3B82F6" />
+                  <Text className="text-sm font-medium text-text-primary">
+                    {latestData.stepCount.toLocaleString()}
+                  </Text>
+                </View>
+              )}
+              {latestData.exerciseMinutes != null && (
+                <View className="flex-row items-center gap-1.5">
+                  <Ionicons name="fitness" size={16} color="#22C55E" />
+                  <Text className="text-sm font-medium text-text-primary">
+                    {latestData.exerciseMinutes}
+                  </Text>
+                  <Text className="text-2xs text-text-secondary">min</Text>
+                </View>
+              )}
             </View>
           </View>
-        </View>
+        )}
+
+        {/* Weekly Check-in CTA */}
+        <Pressable
+          onPress={() => router.push("/(main)/checkin")}
+          className="bg-green-50 border border-green-200 rounded-2xl p-4 flex-row items-center mb-4 active:bg-green-100"
+          accessibilityRole="button"
+          accessibilityLabel="Weekly check-in. Update your latest readings"
+        >
+          <View className="w-10 h-10 bg-green-100 rounded-full items-center justify-center mr-3">
+            <Ionicons name="fitness" size={20} color="#22C55E" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-sm font-semibold text-green-900">
+              Weekly Check-in
+            </Text>
+            <Text className="text-xs text-green-700 mt-0.5">
+              Update your latest readings
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#22C55E" />
+        </Pressable>
 
         {/* Recommended Tests CTA */}
         <Pressable
           onPress={() => router.push("/(main)/recommendations")}
           className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex-row items-center mb-4 active:bg-blue-100"
+          accessibilityRole="button"
+          accessibilityLabel="See recommended tests. Improve your estimate by completing key tests"
         >
           <View className="w-10 h-10 bg-blue-100 rounded-full items-center justify-center mr-3">
             <Ionicons name="flask" size={20} color="#3B82F6" />
@@ -234,7 +332,6 @@ export default function DashboardScreen() {
           <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
         </Pressable>
 
-        {/* Disclaimer */}
         <DisclaimerBanner disclaimerKey="risk" />
       </ScrollView>
     </SafeAreaView>

@@ -37,7 +37,7 @@ export function CompletenessMeter({
   nextLevelHint,
 }: CompletenessMeterProps) {
   return (
-    <View className="bg-white rounded-2xl p-4 shadow-sm">
+    <View className="bg-white rounded-2xl p-4 shadow-sm" accessibilityLabel={`Data completeness level ${currentLevel} of 4. ${nextLevelHint || ''}`}>
       <Text className="text-sm font-semibold text-text-primary mb-3">
         Data Completeness
       </Text>

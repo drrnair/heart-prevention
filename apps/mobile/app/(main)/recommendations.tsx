@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,10 +6,17 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
+  RefreshControl,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
+import { LoadingSkeleton } from "@/components/LoadingSkeleton";
+import { ErrorBanner } from "@/components/ErrorBanner";
+import {
+  useRecommendations,
+  TEST_DISPLAY_NAMES,
+} from "@/hooks/useRecommendations";
 
 type RecommendationStatus =
   | "pending"
@@ -18,20 +25,9 @@ type RecommendationStatus =
   | "declined"
   | "snoozed";
 
-interface Recommendation {
-  readonly id: string;
-  readonly testName: string;
-  readonly measures: string;
-  readonly relevance: string;
-  readonly impactOnEstimate: string;
-  readonly guideline: string;
-  readonly tier: number;
-  readonly status: RecommendationStatus;
-}
-
 const STATUS_BADGES: Record<
   RecommendationStatus,
-  { bg: string; text: string; label: string }
+  { readonly bg: string; readonly text: string; readonly label: string }
 > = {
   pending: { bg: "bg-gray-100", text: "text-gray-700", label: "Pending" },
   scheduled: {
@@ -56,89 +52,22 @@ const STATUS_BADGES: Record<
   },
 };
 
-const MOCK_RECOMMENDATIONS: readonly Recommendation[] = [
-  {
-    id: "1",
-    testName: "Lipid Panel",
-    measures: "Total Cholesterol, LDL, HDL, Triglycerides",
-    relevance:
-      "Core requirement for all major risk calculators (PCE, SCORE2, QRISK3). Your current estimate uses imputed values.",
-    impactOnEstimate: "May narrow your confidence range by 40-60%",
-    guideline: "ACC/AHA 2019 Primary Prevention Guidelines",
-    tier: 1,
-    status: "pending",
-  },
-  {
-    id: "2",
-    testName: "Fasting Glucose & HbA1c",
-    measures: "Fasting blood glucose, Glycated hemoglobin (HbA1c)",
-    relevance:
-      "Diabetes status significantly impacts risk. Currently using self-reported status.",
-    impactOnEstimate: "Refines diabetes component of risk score",
-    guideline: "ADA Standards of Care 2024",
-    tier: 1,
-    status: "pending",
-  },
-  {
-    id: "3",
-    testName: "hsCRP (High-Sensitivity C-Reactive Protein)",
-    measures: "Systemic inflammation marker",
-    relevance:
-      "Risk-enhancing factor per ACC/AHA. Relevant given your family history of premature CVD.",
-    impactOnEstimate: "May reclassify risk if elevated (>2 mg/L)",
-    guideline: "ACC/AHA 2019 - Risk Enhancing Factors",
-    tier: 2,
-    status: "pending",
-  },
-  {
-    id: "4",
-    testName: "Lipoprotein(a)",
-    measures: "Lp(a) level - genetically determined atherogenic lipoprotein",
-    relevance:
-      "Risk-enhancing factor. Elevated Lp(a) found in ~20% of population. Once-in-a-lifetime test.",
-    impactOnEstimate: "May reclassify borderline risk upward if >50 mg/dL",
-    guideline: "ACC/AHA 2019, ESC/EAS 2020 Dyslipidemia Guidelines",
-    tier: 2,
-    status: "pending",
-  },
-  {
-    id: "5",
-    testName: "Coronary Artery Calcium (CAC) Score",
-    measures: "CT scan measuring calcified plaque in coronary arteries",
-    relevance:
-      "Most powerful risk reclassifier for borderline risk. Your current estimate falls in borderline range.",
-    impactOnEstimate:
-      "CAC=0 may reclassify to low risk; CAC>100 to high risk",
-    guideline: "ACC/AHA 2019 - Coronary Calcium Score",
-    tier: 3,
-    status: "pending",
-  },
-  {
-    id: "6",
-    testName: "ABI (Ankle-Brachial Index)",
-    measures: "Ratio of ankle to arm blood pressure",
-    relevance:
-      "Detects peripheral artery disease, a coronary risk equivalent.",
-    impactOnEstimate:
-      "ABI <0.9 may reclassify to high risk",
-    guideline: "ACC/AHA 2019 - Risk Enhancing Factors",
-    tier: 3,
-    status: "pending",
-  },
-];
+const PRIORITY_BORDERS: Record<string, string> = {
+  routine: "border-gray-200",
+  recommended: "border-blue-300",
+  strongly_recommended: "border-orange-300",
+};
 
 export default function RecommendationsScreen() {
   const router = useRouter();
-  const [recommendations, setRecommendations] = useState<Recommendation[]>(
-    [...MOCK_RECOMMENDATIONS],
-  );
+  const { recommendations, isLoading, error, refetch, updateStatus } =
+    useRecommendations();
 
-  const updateStatus = (id: string, newStatus: RecommendationStatus) => {
-    setRecommendations((prev) =>
-      prev.map((rec) =>
-        rec.id === id ? { ...rec, status: newStatus } : rec,
-      ),
-    );
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    const result = await updateStatus(id, newStatus);
+    if (result.error) {
+      Alert.alert("Error", result.error);
+    }
   };
 
   const handlePrint = () => {
@@ -148,22 +77,52 @@ export default function RecommendationsScreen() {
     );
   };
 
-  const tiers = [1, 2, 3];
-  const tierLabels: Record<number, string> = {
-    1: "Tier 1 - Essential (Core Risk Scoring)",
-    2: "Tier 2 - Risk Enhancers",
-    3: "Tier 3 - Advanced Reclassifiers",
-  };
+  if (isLoading && recommendations.length === 0) {
+    return (
+      <SafeAreaView className="flex-1 bg-surface-secondary">
+        <LoadingSkeleton />
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView className="flex-1 bg-surface-secondary">
+        <ErrorBanner message={error} onRetry={refetch} />
+      </SafeAreaView>
+    );
+  }
+
+  if (recommendations.length === 0) {
+    return (
+      <SafeAreaView className="flex-1 bg-surface-secondary">
+        <View className="flex-1 items-center justify-center px-6">
+          <View className="w-20 h-20 bg-green-100 rounded-full items-center justify-center mb-4">
+            <Ionicons name="checkmark-circle" size={48} color="#22C55E" />
+          </View>
+          <Text className="text-xl font-bold text-text-primary mb-2 text-center">
+            All Caught Up
+          </Text>
+          <Text className="text-sm text-text-secondary text-center">
+            No recommended tests at this time. Check back after your next
+            assessment update.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-surface-secondary">
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-4 py-4 pb-8"
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} />
+        }
       >
-        {/* Header */}
         <View className="flex-row items-center mb-4">
-          <Pressable onPress={() => router.back()} className="mr-3">
+          <Pressable onPress={() => router.back()} className="mr-3" accessibilityRole="button" accessibilityLabel="Go back" style={{ minHeight: 44, minWidth: 44 }}>
             <Ionicons name="arrow-back" size={24} color="#111827" />
           </Pressable>
           <View className="flex-1">
@@ -174,118 +133,114 @@ export default function RecommendationsScreen() {
           <Pressable
             onPress={handlePrint}
             className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm"
+            accessibilityRole="button"
+            accessibilityLabel="Print recommended tests list"
           >
             <Ionicons name="print-outline" size={20} color="#111827" />
           </Pressable>
         </View>
 
-        {/* Tiers */}
-        {tiers.map((tier) => {
-          const tierRecs = recommendations.filter((r) => r.tier === tier);
-          if (tierRecs.length === 0) return null;
+        <View className="gap-3">
+          {recommendations.map((rec) => {
+            const status = rec.status as RecommendationStatus;
+            const badge = STATUS_BADGES[status] ?? STATUS_BADGES.pending;
+            const borderClass = PRIORITY_BORDERS[rec.priority] ?? "border-gray-200";
+            const displayName =
+              TEST_DISPLAY_NAMES[rec.testCode] ?? rec.testCode;
 
-          return (
-            <View key={tier} className="mb-6">
-              <Text className="text-sm font-semibold text-text-primary mb-3 ml-1">
-                {tierLabels[tier]}
-              </Text>
-
-              <View className="gap-3">
-                {tierRecs.map((rec) => {
-                  const badge = STATUS_BADGES[rec.status];
-                  return (
-                    <View
-                      key={rec.id}
-                      className="bg-white rounded-2xl p-4 shadow-sm"
+            return (
+              <View
+                key={rec.id}
+                className={`bg-white rounded-2xl p-4 shadow-sm border-l-4 ${borderClass}`}
+                accessibilityLabel={`${displayName}, priority: ${rec.priority}, status: ${badge.label}`}
+              >
+                <View className="flex-row items-start justify-between mb-2">
+                  <Text className="text-base font-semibold text-text-primary flex-1 mr-2">
+                    {displayName}
+                  </Text>
+                  <View
+                    className={`${badge.bg} rounded-full px-2.5 py-0.5`}
+                  >
+                    <Text
+                      className={`text-2xs font-medium ${badge.text}`}
                     >
-                      <View className="flex-row items-start justify-between mb-2">
-                        <Text className="text-base font-semibold text-text-primary flex-1 mr-2">
-                          {rec.testName}
-                        </Text>
-                        <View
-                          className={`${badge.bg} rounded-full px-2.5 py-0.5`}
-                        >
-                          <Text
-                            className={`text-2xs font-medium ${badge.text}`}
-                          >
-                            {badge.label}
-                          </Text>
-                        </View>
-                      </View>
+                      {badge.label}
+                    </Text>
+                  </View>
+                </View>
 
-                      <Text className="text-xs text-text-secondary mb-2">
-                        <Text className="font-medium">Measures: </Text>
-                        {rec.measures}
+                <Text className="text-xs text-text-secondary mb-2">
+                  <Text className="font-medium">Why for you: </Text>
+                  {rec.rationale}
+                </Text>
+
+                <View className="bg-blue-50 rounded-lg p-2 mb-3">
+                  <Text className="text-xs text-blue-700">
+                    <Text className="font-medium">Category: </Text>
+                    {rec.category}
+                  </Text>
+                </View>
+
+                {status === "pending" && (
+                  <View className="flex-row gap-2">
+                    <Pressable
+                      onPress={() =>
+                        handleUpdateStatus(rec.id, "scheduled")
+                      }
+                      className="flex-1 bg-blue-50 py-2 rounded-lg items-center active:bg-blue-100"
+                      accessibilityRole="button"
+                      accessibilityLabel={`Schedule ${displayName}`}
+                      style={{ minHeight: 44 }}
+                    >
+                      <Text className="text-xs font-medium text-blue-700">
+                        Schedule
                       </Text>
-
-                      <Text className="text-xs text-text-secondary mb-2">
-                        <Text className="font-medium">Why for you: </Text>
-                        {rec.relevance}
+                    </Pressable>
+                    <Pressable
+                      onPress={() =>
+                        handleUpdateStatus(rec.id, "completed")
+                      }
+                      className="flex-1 bg-green-50 py-2 rounded-lg items-center active:bg-green-100"
+                      accessibilityRole="button"
+                      accessibilityLabel={`Mark ${displayName} as completed`}
+                      style={{ minHeight: 44 }}
+                    >
+                      <Text className="text-xs font-medium text-green-700">
+                        Completed
                       </Text>
-
-                      <View className="bg-blue-50 rounded-lg p-2 mb-2">
-                        <Text className="text-xs text-blue-700">
-                          <Text className="font-medium">Impact: </Text>
-                          {rec.impactOnEstimate}
-                        </Text>
-                      </View>
-
-                      <Text className="text-2xs text-text-tertiary mb-3">
-                        Guideline: {rec.guideline}
+                    </Pressable>
+                    <Pressable
+                      onPress={() =>
+                        handleUpdateStatus(rec.id, "declined")
+                      }
+                      className="flex-1 bg-gray-50 py-2 rounded-lg items-center active:bg-gray-100"
+                      accessibilityRole="button"
+                      accessibilityLabel={`Decline ${displayName}`}
+                      style={{ minHeight: 44 }}
+                    >
+                      <Text className="text-xs font-medium text-gray-600">
+                        Decline
                       </Text>
-
-                      {/* Action Buttons */}
-                      {rec.status === "pending" && (
-                        <View className="flex-row gap-2">
-                          <Pressable
-                            onPress={() =>
-                              updateStatus(rec.id, "scheduled")
-                            }
-                            className="flex-1 bg-blue-50 py-2 rounded-lg items-center active:bg-blue-100"
-                          >
-                            <Text className="text-xs font-medium text-blue-700">
-                              Schedule
-                            </Text>
-                          </Pressable>
-                          <Pressable
-                            onPress={() =>
-                              updateStatus(rec.id, "completed")
-                            }
-                            className="flex-1 bg-green-50 py-2 rounded-lg items-center active:bg-green-100"
-                          >
-                            <Text className="text-xs font-medium text-green-700">
-                              Completed
-                            </Text>
-                          </Pressable>
-                          <Pressable
-                            onPress={() =>
-                              updateStatus(rec.id, "declined")
-                            }
-                            className="flex-1 bg-gray-50 py-2 rounded-lg items-center active:bg-gray-100"
-                          >
-                            <Text className="text-xs font-medium text-gray-600">
-                              Decline
-                            </Text>
-                          </Pressable>
-                          <Pressable
-                            onPress={() =>
-                              updateStatus(rec.id, "snoozed")
-                            }
-                            className="flex-1 bg-amber-50 py-2 rounded-lg items-center active:bg-amber-100"
-                          >
-                            <Text className="text-xs font-medium text-amber-700">
-                              Snooze
-                            </Text>
-                          </Pressable>
-                        </View>
-                      )}
-                    </View>
-                  );
-                })}
+                    </Pressable>
+                    <Pressable
+                      onPress={() =>
+                        handleUpdateStatus(rec.id, "snoozed")
+                      }
+                      className="flex-1 bg-amber-50 py-2 rounded-lg items-center active:bg-amber-100"
+                      accessibilityRole="button"
+                      accessibilityLabel={`Snooze ${displayName}`}
+                      style={{ minHeight: 44 }}
+                    >
+                      <Text className="text-xs font-medium text-amber-700">
+                        Snooze
+                      </Text>
+                    </Pressable>
+                  </View>
+                )}
               </View>
-            </View>
-          );
-        })}
+            );
+          })}
+        </View>
 
         <DisclaimerBanner disclaimerKey="recommendations" />
       </ScrollView>

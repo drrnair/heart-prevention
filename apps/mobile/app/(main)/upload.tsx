@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,68 +11,53 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
-
-interface ExtractedValue {
-  readonly name: string;
-  readonly value: string;
-  readonly unit: string;
-  readonly referenceRange: string;
-  readonly isAbnormal: boolean;
-}
+import { useLabUpload } from "@/hooks/useLabUpload";
+import { useUnits } from "@/hooks/useUnits";
+import {
+  mgdlToMmolChol,
+  mgdlToMmolTG,
+  mgdlToMmolGlucose,
+} from "@/lib/unit-conversion";
 
 type UploadStage = "select" | "processing" | "review" | "confirmed";
 
-// Mock extracted values
-const MOCK_EXTRACTED: readonly ExtractedValue[] = [
-  {
-    name: "Total Cholesterol",
-    value: "218",
-    unit: "mg/dL",
-    referenceRange: "<200",
-    isAbnormal: true,
-  },
-  {
-    name: "LDL Cholesterol",
-    value: "142",
-    unit: "mg/dL",
-    referenceRange: "<100",
-    isAbnormal: true,
-  },
-  {
-    name: "HDL Cholesterol",
-    value: "48",
-    unit: "mg/dL",
-    referenceRange: ">40",
-    isAbnormal: false,
-  },
-  {
-    name: "Triglycerides",
-    value: "138",
-    unit: "mg/dL",
-    referenceRange: "<150",
-    isAbnormal: false,
-  },
-  {
-    name: "Fasting Glucose",
-    value: "102",
-    unit: "mg/dL",
-    referenceRange: "<100",
-    isAbnormal: true,
-  },
-  {
-    name: "HbA1c",
-    value: "5.8",
-    unit: "%",
-    referenceRange: "<5.7",
-    isAbnormal: true,
-  },
-];
+/** Names of cholesterol-type values that use the cholesterol conversion factor. */
+const CHOL_KEYS = new Set([
+  "totalCholesterol",
+  "ldlCholesterol",
+  "hdlCholesterol",
+  "apolipoproteinB",
+]);
+const TG_KEYS = new Set(["triglycerides"]);
+const GLUCOSE_KEYS = new Set(["fastingGlucose"]);
+
+/** Convert a reference range string (e.g. "<200", ">40", "70-100") using a converter fn. */
+function convertRange(range: string, convert: (v: number) => number): string {
+  if (range.startsWith("<") || range.startsWith(">")) {
+    const prefix = range[0];
+    const num = parseFloat(range.slice(1));
+    return isNaN(num) ? range : `${prefix}${convert(num)}`;
+  }
+  const parts = range.split("-").map(Number);
+  if (parts.length === 2 && parts.every((n) => !isNaN(n))) {
+    return `${convert(parts[0]!)}-${convert(parts[1]!)}`;
+  }
+  return range;
+}
 
 export default function UploadScreen() {
   const [stage, setStage] = useState<UploadStage>("select");
-  const [extractedValues, setExtractedValues] = useState<
-    readonly ExtractedValue[]
-  >([]);
+  const {
+    uploadImage,
+    confirmValues,
+    extractedValues,
+    labResultId,
+    isUploading,
+    error,
+    reset,
+  } = useLabUpload();
+  const { cholUnit } = useUnits();
+  const isMmol = cholUnit === "mmol/L";
 
   const pickFromCamera = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -90,7 +75,7 @@ export default function UploadScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      processImage(result.assets[0].uri);
+      await processImage(result.assets[0].uri);
     }
   };
 
@@ -112,38 +97,50 @@ export default function UploadScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      processImage(result.assets[0].uri);
+      await processImage(result.assets[0].uri);
     }
   };
 
-  const processImage = async (_uri: string) => {
+  const processImage = async (uri: string) => {
     setStage("processing");
+    const today = new Date().toISOString().split("T")[0] ?? "";
+    await uploadImage(uri, today);
+  };
 
-    try {
-      // Simulate API processing - in production, POST image to API
-      await new Promise((resolve) => setTimeout(resolve, 2500));
+  useEffect(() => {
+    if (stage !== "processing") return;
+    if (isUploading) return;
 
-      setExtractedValues(MOCK_EXTRACTED);
-      setStage("review");
-    } catch {
+    if (error) {
       Alert.alert(
         "Processing Failed",
-        "We couldn't analyze your report. Please try again or use manual entry.",
+        "We couldn't analyse your report. Please try again or use manual entry.",
       );
       setStage("select");
+      return;
     }
-  };
 
-  const handleConfirm = () => {
+    if (extractedValues.length > 0) {
+      setStage("review");
+    }
+  }, [stage, isUploading, error, extractedValues]);
+
+  const handleConfirm = async () => {
+    if (!labResultId) return;
+    const result = await confirmValues(labResultId);
+    if (result.error) {
+      Alert.alert("Error", result.error);
+      return;
+    }
     setStage("confirmed");
   };
 
   const handleReject = () => {
+    reset();
     setStage("select");
-    setExtractedValues([]);
   };
 
-  if (stage === "processing") {
+  if (stage === "processing" || isUploading) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center">
         <ActivityIndicator size="large" color="#DC2626" />
@@ -173,10 +170,12 @@ export default function UploadScreen() {
         </Text>
         <Pressable
           onPress={() => {
+            reset();
             setStage("select");
-            setExtractedValues([]);
           }}
           className="bg-primary-600 px-8 py-3 rounded-xl active:bg-primary-700"
+          accessibilityRole="button"
+          accessibilityLabel="Upload another report"
         >
           <Text className="text-white font-semibold">Upload Another</Text>
         </Pressable>
@@ -184,14 +183,13 @@ export default function UploadScreen() {
     );
   }
 
-  if (stage === "review") {
+  if (stage === "review" && extractedValues.length > 0) {
     return (
       <SafeAreaView className="flex-1 bg-surface-secondary">
         <ScrollView
           className="flex-1"
           contentContainerClassName="px-4 py-4 pb-8"
         >
-          {/* Header */}
           <View className="mb-4">
             <Text className="text-xl font-bold text-text-primary">
               Review Extracted Values
@@ -211,47 +209,76 @@ export default function UploadScreen() {
             </View>
           </View>
 
-          {/* Extracted Values */}
           <View className="gap-2 mb-6">
-            {extractedValues.map((item) => (
-              <View
-                key={item.name}
-                className={`bg-white rounded-xl p-4 border ${
-                  item.isAbnormal ? "border-red-200" : "border-gray-100"
-                }`}
-              >
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-sm font-medium text-text-primary">
-                    {item.name}
+            {extractedValues.map((item) => {
+              const isChol = CHOL_KEYS.has(item.name);
+              const isTG = TG_KEYS.has(item.name);
+              const isGluc = GLUCOSE_KEYS.has(item.name);
+              const needsConvert = isMmol && (isChol || isTG || isGluc);
+
+              const displayValue = needsConvert && item.value != null
+                ? isChol
+                  ? mgdlToMmolChol(item.value)
+                  : isTG
+                    ? mgdlToMmolTG(item.value)
+                    : mgdlToMmolGlucose(item.value)
+                : item.value;
+
+              const displayUnit = needsConvert ? "mmol/L" : item.unit;
+
+              const displayRange = needsConvert
+                ? convertRange(
+                    item.referenceRange,
+                    isChol
+                      ? mgdlToMmolChol
+                      : isTG
+                        ? mgdlToMmolTG
+                        : mgdlToMmolGlucose,
+                  )
+                : item.referenceRange;
+
+              return (
+                <View
+                  key={item.name}
+                  className={`bg-white rounded-xl p-4 border ${
+                    item.isAbnormal ? "border-red-200" : "border-gray-100"
+                  }`}
+                  accessibilityLabel={`${item.name}: ${displayValue} ${displayUnit}${item.isAbnormal ? ', abnormal' : ''}`}
+                >
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-sm font-medium text-text-primary">
+                      {item.name}
+                    </Text>
+                    {item.isAbnormal && (
+                      <View className="bg-red-100 rounded-full px-2 py-0.5">
+                        <Text className="text-2xs font-medium text-red-700">
+                          Abnormal
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <View className="flex-row items-baseline mt-1">
+                    <Text className="text-xl font-bold text-text-primary">
+                      {displayValue}
+                    </Text>
+                    <Text className="text-sm text-text-secondary ml-1">
+                      {displayUnit}
+                    </Text>
+                  </View>
+                  <Text className="text-xs text-text-tertiary mt-1">
+                    Reference: {displayRange}
                   </Text>
-                  {item.isAbnormal && (
-                    <View className="bg-red-100 rounded-full px-2 py-0.5">
-                      <Text className="text-2xs font-medium text-red-700">
-                        Abnormal
-                      </Text>
-                    </View>
-                  )}
                 </View>
-                <View className="flex-row items-baseline mt-1">
-                  <Text className="text-xl font-bold text-text-primary">
-                    {item.value}
-                  </Text>
-                  <Text className="text-sm text-text-secondary ml-1">
-                    {item.unit}
-                  </Text>
-                </View>
-                <Text className="text-xs text-text-tertiary mt-1">
-                  Reference: {item.referenceRange}
-                </Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
 
-          {/* Action Buttons */}
           <View className="gap-3">
             <Pressable
               onPress={handleConfirm}
               className="bg-primary-600 h-12 rounded-xl items-center justify-center active:bg-primary-700"
+              accessibilityRole="button"
+              accessibilityLabel="Confirm extracted values"
             >
               <View className="flex-row items-center gap-2">
                 <Ionicons name="checkmark" size={20} color="#FFFFFF" />
@@ -264,6 +291,8 @@ export default function UploadScreen() {
             <Pressable
               onPress={handleReject}
               className="h-12 rounded-xl items-center justify-center border border-gray-200 active:bg-gray-50"
+              accessibilityRole="button"
+              accessibilityLabel="Reject values and re-upload"
             >
               <Text className="text-text-primary text-base font-medium">
                 Reject & Re-upload
@@ -277,11 +306,9 @@ export default function UploadScreen() {
     );
   }
 
-  // Select stage
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-6 py-6">
-        {/* Header */}
         <Text className="text-2xl font-bold text-text-primary mb-2">
           Upload Report
         </Text>
@@ -290,10 +317,11 @@ export default function UploadScreen() {
           will extract the values for you.
         </Text>
 
-        {/* Camera Button */}
         <Pressable
           onPress={pickFromCamera}
           className="bg-primary-50 border-2 border-primary-200 rounded-2xl p-6 items-center mb-4 active:bg-primary-100"
+          accessibilityRole="button"
+          accessibilityLabel="Take a photo of your paper report"
         >
           <View className="w-16 h-16 bg-primary-100 rounded-full items-center justify-center mb-3">
             <Ionicons name="camera" size={32} color="#DC2626" />
@@ -306,10 +334,11 @@ export default function UploadScreen() {
           </Text>
         </Pressable>
 
-        {/* Gallery Button */}
         <Pressable
           onPress={pickFromGallery}
           className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 items-center mb-4 active:bg-blue-100"
+          accessibilityRole="button"
+          accessibilityLabel="Choose a photo from gallery"
         >
           <View className="w-16 h-16 bg-blue-100 rounded-full items-center justify-center mb-3">
             <Ionicons name="images" size={32} color="#3B82F6" />
@@ -322,8 +351,7 @@ export default function UploadScreen() {
           </Text>
         </Pressable>
 
-        {/* Manual Entry */}
-        <Pressable className="bg-surface-secondary border border-gray-200 rounded-2xl p-6 items-center active:bg-surface-tertiary">
+        <Pressable className="bg-surface-secondary border border-gray-200 rounded-2xl p-6 items-center active:bg-surface-tertiary" accessibilityRole="button" accessibilityLabel="Manual entry. Enter values yourself from your report">
           <View className="w-16 h-16 bg-gray-100 rounded-full items-center justify-center mb-3">
             <Ionicons name="create" size={32} color="#6B7280" />
           </View>

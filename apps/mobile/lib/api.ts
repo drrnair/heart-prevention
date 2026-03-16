@@ -70,12 +70,58 @@ async function request<T>(
   }
 }
 
+async function requestFormData<T>(
+  path: string,
+  formData: FormData,
+): Promise<ApiResponse<T>> {
+  const token = await getAuthToken();
+
+  const headers: Record<string, string> = {};
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: json.detail ?? json.message ?? "Request failed",
+        status: response.status,
+      };
+    }
+
+    return {
+      data: json as T,
+      error: null,
+      status: response.status,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Network error";
+    return {
+      data: null,
+      error: message,
+      status: 0,
+    };
+  }
+}
+
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body: unknown) => request<T>("POST", path, body),
   put: <T>(path: string, body: unknown) => request<T>("PUT", path, body),
   patch: <T>(path: string, body: unknown) => request<T>("PATCH", path, body),
   delete: <T>(path: string) => request<T>("DELETE", path),
+  postFormData: <T>(path: string, formData: FormData) =>
+    requestFormData<T>(path, formData),
 } as const;
 
 export type { ApiResponse, PaginatedResponse };

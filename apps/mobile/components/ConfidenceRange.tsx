@@ -43,7 +43,7 @@ export function ConfidenceRange({
   const midPercent = (midpoint / maxScale) * 100;
 
   return (
-    <View className="bg-white rounded-2xl p-4 shadow-sm">
+    <View className="bg-white rounded-2xl p-4 shadow-sm" accessibilityLabel={`Risk estimate ranges from ${low} to ${high} percent, midpoint ${midpoint}${isPreliminary ? ', preliminary estimate' : ''}`}>
       <View className="flex-row items-center justify-between mb-2">
         <Text className="text-sm font-semibold text-text-primary">
           10-Year Risk Estimate

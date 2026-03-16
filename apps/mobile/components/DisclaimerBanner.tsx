@@ -27,6 +27,16 @@ const DISCLAIMERS: Record<string, { short: string; full: string }> = {
       "Test suggestions are educational. Discuss with your healthcare provider.",
     full: "The recommended tests and investigations are based on published clinical guidelines (ACC/AHA, ESC, etc.) and your current data completeness level. These are educational suggestions to help you have informed discussions with your healthcare provider. Your doctor may recommend different or additional tests based on your complete clinical picture.",
   },
+  supplements: {
+    short:
+      "Supplement information is educational. Consult your provider before starting any supplement.",
+    full: "The supplement and medication tracking features are for personal record-keeping and educational purposes only. Information about supplements, including evidence tiers and interactions, is based on published research but may not reflect the most current findings. Always consult your healthcare provider before starting, stopping, or changing any supplement or medication regimen.",
+  },
+  chat: {
+    short:
+      "AI responses are educational wellness information, not medical advice.",
+    full: "The AI wellness chat provides general health and wellness information based on published guidelines and research. Responses are not personalized medical advice and should not replace consultation with a qualified healthcare provider. If you are experiencing a medical emergency, call emergency services immediately.",
+  },
 };
 
 interface DisclaimerBannerProps {
@@ -43,6 +53,8 @@ export function DisclaimerBanner({ disclaimerKey }: DisclaimerBannerProps) {
     <Pressable
       onPress={() => setIsExpanded((prev) => !prev)}
       className="bg-gray-50 border border-gray-200 rounded-xl p-3 mt-4"
+      accessibilityRole="button"
+      accessibilityLabel="Toggle disclaimer details"
     >
       <View className="flex-row items-start gap-2">
         <Ionicons

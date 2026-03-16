@@ -1,0 +1,158 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "done": "Done",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "riskScore": "10-Year Risk",
+    "preliminary": "PRELIMINARY",
+    "bodyMetrics": "Body Metrics",
+    "checkIn": "Weekly Check-in",
+    "viewTrends": "View Trends",
+    "recommendedTests": "See Recommended Tests",
+    "completeProfile": "Complete Your Profile",
+    "completeProfileDesc": "Add your health information to get your risk assessment",
+    "lastUpdated": "Last updated",
+    "riskEnhancers": "Risk-Enhancing Factors",
+    "wearableData": "Wearable Data",
+    "lastSynced": "Last synced"
+  },
+  "upload": {
+    "title": "Upload Report",
+    "takePhoto": "Take Photo",
+    "chooseFromGallery": "Choose from Gallery",
+    "manualEntry": "Manual Entry",
+    "processing": "Analyzing your report...",
+    "reviewTitle": "Review Extracted Values",
+    "aiWarning": "These values were extracted by AI. Please verify before confirming.",
+    "confirmed": "Lab values confirmed!",
+    "uploadAnother": "Upload Another Report"
+  },
+  "trends": {
+    "title": "Trends",
+    "risk": "Risk",
+    "lipids": "Lab Values",
+    "vitals": "Vitals",
+    "noData": "No data yet",
+    "noRiskData": "No risk data yet. Complete your profile to see trends.",
+    "noLabData": "No lab data yet. Upload results to see trends.",
+    "noVitalsData": "No vitals data yet. Complete an assessment to see trends."
+  },
+  "lifestyle": {
+    "title": "Lifestyle Plan",
+    "generate": "Generate My Plan",
+    "regenerate": "Regenerate Plan",
+    "generating": "Creating your personalized plan...",
+    "summary": "Summary",
+    "nutrition": "Nutrition",
+    "exercise": "Exercise",
+    "supplements": "Supplements",
+    "monitoring": "Monitoring",
+    "targets": "Targets",
+    "noPlan": "No lifestyle plan yet",
+    "generateDesc": "Generate your personalized 12-week plan based on your health profile"
+  },
+  "chat": {
+    "title": "Wellness Chat",
+    "placeholder": "Ask about heart health or wellness...",
+    "remaining": "{{count}}/5 remaining",
+    "limitReached": "Daily limit reached. Try again tomorrow.",
+    "welcome": "Ask me anything about heart health and wellness",
+    "newChat": "New Chat",
+    "history": "History"
+  },
+  "chatHistory": {
+    "title": "Chat History",
+    "empty": "No previous conversations"
+  },
+  "checkin": {
+    "title": "Weekly Check-in",
+    "mood": "How are you feeling?",
+    "exercise": "Exercise Minutes",
+    "sleep": "Average Sleep (hours)",
+    "stress": "Stress Level",
+    "adherence": "Medication Adherence",
+    "notes": "Notes",
+    "submit": "Submit Check-in",
+    "success": "Your check-in has been recorded",
+    "backToDashboard": "Back to Dashboard",
+    "alreadySubmitted": "You've already submitted a check-in for this week",
+    "prefillWearable": "Pre-fill from Wearable"
+  },
+  "supplements": {
+    "title": "My Supplements & Medications",
+    "active": "Active",
+    "all": "All",
+    "add": "Add Supplement",
+    "name": "Name",
+    "dosage": "Dosage",
+    "frequency": "Frequency",
+    "isMedication": "This is a prescribed medication",
+    "reason": "Reason",
+    "referenceGuide": "See Reference Guide",
+    "conditionInference": "We noticed you take {{medication}}. Would you like to update your profile to reflect {{condition}}?"
+  },
+  "supplementReference": {
+    "title": "Evidence-Based Supplements",
+    "tier1": "Strong Evidence",
+    "tier2": "Moderate Evidence",
+    "tier3": "Emerging Evidence"
+  },
+  "recommendations": {
+    "title": "Recommended Tests",
+    "empty": "No recommendations at this time",
+    "tier": "Tier {{level}}"
+  },
+  "profile": {
+    "title": "Profile",
+    "personalInfo": "Personal Information",
+    "unitsDisplay": "Units & Display",
+    "subscription": "Subscription",
+    "account": "Account",
+    "signOut": "Sign Out",
+    "deleteAccount": "Delete Account",
+    "wearableSettings": "Wearable Settings"
+  },
+  "paywall": {
+    "title": "Unlock Your Full Heart Health Journey",
+    "freeTrial": "Start 7-Day Free Trial",
+    "restore": "Restore Purchases",
+    "cancelAnytime": "Cancel anytime. No charge during trial.",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "saveBadge": "Save 33%",
+    "free": "Free",
+    "premium": "Premium"
+  },
+  "subscription": {
+    "title": "Subscription",
+    "currentTier": "Current Plan",
+    "daysRemaining": "{{count}} days remaining",
+    "renewsOn": "Renews on {{date}}",
+    "manage": "Manage Subscription",
+    "upgrade": "Upgrade to Premium"
+  },
+  "wearable": {
+    "title": "Wearable Settings",
+    "connected": "Connected to {{source}}",
+    "notConnected": "Not Connected",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "syncNow": "Sync Now",
+    "lastSynced": "Last synced: {{time}}",
+    "privacyNote": "Your health data stays in your account and is never shared"
+  },
+  "disclaimers": {
+    "general": "This app provides educational health information only and is not a medical device.",
+    "riskScore": "Risk estimates are population-level calculations for educational purposes only.",
+    "supplements": "Supplements are not substitutes for prescribed medications."
+  }
+}

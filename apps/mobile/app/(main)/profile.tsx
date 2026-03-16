@@ -10,10 +10,12 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const { tier } = useSubscription();
 
   const [unitSystem, setUnitSystem] = useState<"metric" | "imperial">(
     "metric",
@@ -73,6 +75,9 @@ export default function ProfileScreen() {
       <Pressable
         onPress={onPress}
         className="flex-row items-center py-4 border-b border-gray-50 active:bg-gray-50"
+        accessibilityRole="button"
+        accessibilityLabel={`${label}${value ? `, ${value}` : ''}`}
+        style={{ minHeight: 44 }}
       >
         <View
           className={`w-9 h-9 rounded-lg items-center justify-center mr-3 ${
@@ -182,6 +187,9 @@ export default function ProfileScreen() {
                 className={`flex-1 py-2 rounded-md items-center ${
                   unitSystem === "metric" ? "bg-white shadow-sm" : ""
                 }`}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: unitSystem === "metric" }}
+                accessibilityLabel="Metric (cm, kg)"
               >
                 <Text
                   className={`text-xs font-medium ${
@@ -198,6 +206,9 @@ export default function ProfileScreen() {
                 className={`flex-1 py-2 rounded-md items-center ${
                   unitSystem === "imperial" ? "bg-white shadow-sm" : ""
                 }`}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: unitSystem === "imperial" }}
+                accessibilityLabel="Imperial (ft, lbs)"
               >
                 <Text
                   className={`text-xs font-medium ${
@@ -224,6 +235,9 @@ export default function ProfileScreen() {
                 className={`flex-1 py-2 rounded-md items-center ${
                   cholesterolUnit === "mg/dL" ? "bg-white shadow-sm" : ""
                 }`}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: cholesterolUnit === "mg/dL" }}
+                accessibilityLabel="mg/dL"
               >
                 <Text
                   className={`text-xs font-medium ${
@@ -240,6 +254,9 @@ export default function ProfileScreen() {
                 className={`flex-1 py-2 rounded-md items-center ${
                   cholesterolUnit === "mmol/L" ? "bg-white shadow-sm" : ""
                 }`}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: cholesterolUnit === "mmol/L" }}
+                accessibilityLabel="mmol/L"
               >
                 <Text
                   className={`text-xs font-medium ${
@@ -263,13 +280,8 @@ export default function ProfileScreen() {
           <SettingsRow
             icon="diamond-outline"
             label="Subscription Status"
-            value="Free"
-            onPress={() =>
-              Alert.alert(
-                "Upgrade",
-                "Premium subscription plans will be available in a future update.",
-              )
-            }
+            value={tier === "premium" ? "Premium" : tier === "trial" ? "Trial" : "Free"}
+            onPress={() => router.push("/(main)/subscription")}
           />
         </View>
 

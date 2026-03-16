@@ -42,11 +42,11 @@ export default function MainLayout() {
         }}
       />
       <Tabs.Screen
-        name="trends"
+        name="chat"
         options={{
-          title: "Trends",
+          title: "Chat",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart" size={size} color={color} />
+            <Ionicons name="chatbubble-ellipses" size={size} color={color} />
           ),
         }}
       />
@@ -68,13 +68,16 @@ export default function MainLayout() {
           ),
         }}
       />
-      {/* Hide recommendations from tab bar but keep it navigable */}
-      <Tabs.Screen
-        name="recommendations"
-        options={{
-          href: null,
-        }}
-      />
+      {/* Hidden screens — accessible via navigation, not shown in tab bar */}
+      <Tabs.Screen name="trends" options={{ href: null }} />
+      <Tabs.Screen name="recommendations" options={{ href: null }} />
+      <Tabs.Screen name="checkin" options={{ href: null }} />
+      <Tabs.Screen name="supplements" options={{ href: null }} />
+      <Tabs.Screen name="supplement-reference" options={{ href: null }} />
+      <Tabs.Screen name="chat-history" options={{ href: null }} />
+      <Tabs.Screen name="paywall" options={{ href: null }} />
+      <Tabs.Screen name="subscription" options={{ href: null }} />
+      <Tabs.Screen name="wearable-settings" options={{ href: null }} />
     </Tabs>
   );
 }

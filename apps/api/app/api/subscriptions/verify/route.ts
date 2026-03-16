@@ -1,7 +1,3 @@
-/**
- * Subscription verification: POST (stub for RevenueCat).
- */
-
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { createUserClient } from '@/lib/supabase-server';
@@ -9,8 +5,7 @@ import { withAuth, jsonResponse, errorResponse } from '@/lib/route-helpers';
 
 const verifySchema = z.object({
   platform: z.enum(['ios', 'android', 'web']),
-  receiptData: z.string().min(1),
-  productId: z.string().min(1),
+  receipt: z.string().min(1, 'Receipt is required'),
 });
 
 export const POST = withAuth(async (req: NextRequest, user) => {
@@ -24,21 +19,26 @@ export const POST = withAuth(async (req: NextRequest, user) => {
     );
   }
 
-  // TODO: Integrate with RevenueCat API
-  // 1. Send receiptData to RevenueCat for verification
-  // 2. Get subscription status, expiration, entitlements
-  // 3. Update user profile with subscription tier and expiration
+  const { receipt, platform } = parsed.data;
+
+  // TODO: Replace with real RevenueCat server-side verification
+  // 1. Call RevenueCat REST API: GET https://api.revenuecat.com/v1/subscribers/{user_id}
+  //    Headers: { Authorization: 'Bearer REVENUECAT_API_KEY' }
+  // 2. Validate the receipt against the subscriber record
+  // 3. Extract entitlements, expiration date, and subscription status
+  // 4. Map RevenueCat entitlements to app subscription tiers
+
+  const expiresAt = new Date(
+    Date.now() + 30 * 24 * 60 * 60 * 1000,
+  ).toISOString();
 
   const supabase = await createUserClient();
 
-  // Stub: Update subscription status
   const { data, error } = await supabase
     .from('user_profiles')
     .update({
       subscription_tier: 'premium',
-      subscription_expires_at: new Date(
-        Date.now() + 30 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
+      subscription_expires_at: expiresAt,
     })
     .eq('id', user.id)
     .select('subscription_tier, subscription_expires_at')
@@ -50,7 +50,10 @@ export const POST = withAuth(async (req: NextRequest, user) => {
 
   return jsonResponse({
     verified: true,
-    subscription: data,
-    message: 'Subscription verified successfully (stub implementation)',
+    subscription: {
+      tier: data.subscription_tier,
+      expiresAt: data.subscription_expires_at,
+      isActive: true,
+    },
   });
 });
