@@ -1,0 +1,23 @@
+{
+  "name": "@heart-prevention/supabase",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Supabase client, types, and migrations for Heart Prevention",
+  "scripts": {
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:migrate": "supabase migration up",
+    "db:seed": "supabase db reset --seed-only",
+    "db:diff": "supabase db diff",
+    "db:lint": "supabase db lint",
+    "db:types": "supabase gen types typescript --local > src/database.types.ts",
+    "db:status": "supabase status"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "devDependencies": {
+    "supabase": "^1.200.0"
+  }
+}
